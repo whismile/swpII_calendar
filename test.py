@@ -53,7 +53,7 @@ class Calendar(QWidget):
         # Left side Layout ================================
         self.leftLayout = QVBoxLayout()
 
-        # handling month ===============================
+        # handling month ----------------------------------
         self.moveMonth = QHBoxLayout()
 
         self.previousBtn = Button("<", self.previousMonth)
@@ -68,7 +68,15 @@ class Calendar(QWidget):
         self.moveMonth.addWidget(self.showCurrentLabel)
         self.moveMonth.addWidget(self.nextBtn)
         self.leftLayout.addLayout(self.moveMonth)
-        # ==============================================
+        # -------------------------------------------------
+
+        self.yoilLayout = QHBoxLayout()
+        yoil = ["월", "화", "수", "목", "금", "토", "일"]
+        for i in yoil:
+            label = QLabel(i)
+            label.setAlignment(Qt.AlignCenter)
+            self.yoilLayout.addWidget(label)
+        self.leftLayout.addLayout(self.yoilLayout)
 
         # grid layout to appending date Buttons
         self.calendarGrid = QGridLayout()
@@ -168,9 +176,7 @@ class Calendar(QWidget):
 
         self.mCal.year = self.currentYear
         self.mCal.month = self.currentMonth
-        print("call mCal.setCalender")
         self.mCal.setCalander(self.currentYear, self.currentMonth)
-        print("call gridingDate")
         self.gridingDate(self.mCal.getCalander())
 
     def clearLayout(self, layout):
