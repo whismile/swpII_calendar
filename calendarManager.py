@@ -11,6 +11,7 @@ class myCalendar:
         return self.calendar
 
     def setCalander(self, year, month):
+        print("call makeCalendar")
         before = self.makeCalendar(year, month-1)[-1]
         self.calendar = self.makeCalendar(year, month)
         self.calendar[0] = before + self.calendar[0]
@@ -44,6 +45,6 @@ class myCalendar:
 
 
 if __name__ == '__main__':
-    cal = myCalendar(2018, 12)
-    cal.setCalander()
+    cal = myCalendar()
+    cal.setCalander(2018, 12)
     print(cal.calendar)
