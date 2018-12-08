@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import (QApplication, QWidget,
 
 import calendar
 import pickle
+import calendarManager
 
 
 class Button(QToolButton):
@@ -35,7 +36,6 @@ class Calendar(QWidget):
         self.startDay = 0
         self.maxDay = 0
         self.currentYear = year; self.currentMonth = month; self.currentDay = 0
-        self.dateSet = self.makeDateSet(year, month)[:]
         self.fileRoot = ".\schedules.txt"
         self.schedule = {}
 
@@ -55,10 +55,19 @@ class Calendar(QWidget):
         # handling month ===============================
         self.moveMonth = QHBoxLayout()
 
+        self.previousBtn = Button("<", self.previousMonth)
+
         # showing Year and month
         self.showCurrentLabel = QLabel(str(self.currentYear) + " / " + str(self.currentMonth))
         self.showCurrentLabel.setAlignment(Qt.AlignCenter)
-        self.leftLayout.addWidget(self.showCurrentLabel)
+
+        self.nextBtn = Button(">", self.nextMonth)
+
+        self.moveMonth.addWidget(self.previousBtn)
+        self.moveMonth.addWidget(self.showCurrentLabel)
+        self.moveMonth.addWidget(self.nextBtn)
+        self.leftLayout.addLayout(self.moveMonth)
+        # ==============================================
 
         # grid layout to appending date Buttons
         self.calendarGrid = QGridLayout()
@@ -85,57 +94,34 @@ class Calendar(QWidget):
         # ==================================================
 
         # Set grid
-        self.gridingDate(self.dateSet)
+        self.mCal = calendarManager.myCalendar()
+        self.mCal.setCalander(self.currentYear, self.currentMonth)
+        self.gridingDate(self.mCal.getCalander())
 
         self.mainLayout.addLayout(self.leftLayout)
         self.mainLayout.addLayout(self.scheduleLayout)
         self.setLayout(self.mainLayout)
         self.setWindowTitle("Calendar")
 
-    def setMonthRange(self, year=2018, month=12):
-        monthRange = calendar.monthrange(year, month)
-        self.startDay = monthRange[0]
-        self.maxDay = monthRange[1]
-
-    def makeDateSet(self, year=2018, month=12):
-        self.setMonthRange(year, month)
-        day = 1
-        first = False
-
-        tmp = []
-        result = []
-        while day <= self.maxDay:
-            if not first:
-                for i in range(self.startDay + 1):
-                    tmp.append("")
-                tmp.append(str(day))
-                result.append(tmp)
-                tmp = []
-
-                day += 1; first = True
-            else:
-                tmp.append(str(day))
-                day += 1
-                if len(tmp) > 6:
-                    result.append(tmp)
-                    tmp = []
-
-        if len(tmp) is not 0:
-            result.append(tmp)
-
-        return result
-
     def gridingDate(self, arr):
         # Append Day Buttons ===========================
         self.clearLayout(self.calendarGrid)
-
-        arr = self.makeDateSet(self.currentYear, self.currentMonth)
+        self.showCurrentLabel.setText(str(self.currentYear) + " / " + str(self.currentMonth))
+        before = True; after = True
 
         for row, column in enumerate(arr):
             for col, day in enumerate(column):
-                btn = Button(day, self.btnEvent)
-                if day is "":
+                btn = Button(str(day), self.btnEvent)
+                btn.setEnabled(after)
+
+                if before and day > 1:
                     btn.setEnabled(False)
+                else:
+                    before = False
+
+                if not before and day is self.mCal.endDay:
+                    after = False
+
                 self.calendarGrid.addWidget(btn, row, col)
         # ===============================================
 
@@ -155,16 +141,34 @@ class Calendar(QWidget):
         target = str(self.currentYear) + str(self.currentMonth) + str(self.currentDay)
         self.schedule[target] = self.scheduleBox.toPlainText()
         self.statusLabel.setText("modified")
-        print(self.schedule)
 
     def previousMonth(self):
-        if self.currentMonth > 1:
-            self.currentMonth -= 1
-        else:
+        btn = self.sender()
+        print(btn.text())
+        if self.currentMonth is 1:
             self.currentYear -= 1
             self.currentMonth = 12
+        else:
+            self.currentMonth -= 1
 
+        self.mCal.year = self.currentYear
+        self.mCal.month = self.currentMonth
+        self.mCal.setCalander(self.currentYear, self.currentMonth)
+        self.gridingDate(self.mCal.getCalander())
 
+    def nextMonth(self):
+        btn = self.sender()
+        print(btn.text())
+        if self.currentMonth is 12:
+            self.currentYear += 1
+            self.currentMonth = 1
+        else:
+            self.currentMonth += 1
+
+        self.mCal.year = self.currentYear
+        self.mCal.month = self.currentMonth
+        self.mCal.setCalander(self.currentYear, self.currentMonth)
+        self.gridingDate(self.mCal.getCalander())
 
     def clearLayout(self, layout):
         while layout.count():
