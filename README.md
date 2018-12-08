@@ -1,4 +1,4 @@
-Software Project II - Advanced Design : Dugeon Crawl Game Project
+Software Project II - Advanced Design : Calendar
 =================================================================
 아이디어:
 1. 캘린더 제작
