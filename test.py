@@ -6,9 +6,9 @@ from PyQt5.QtWidgets import (QApplication, QWidget,
                              QVBoxLayout, QHBoxLayout,
                              QTextEdit)
 
-import calendar
 import pickle
 import calendarManager
+import time
 
 
 class Button(QToolButton):
@@ -29,7 +29,8 @@ class Button(QToolButton):
 
 class Calendar(QWidget):
 
-    def __init__(self, parent=None, year=2018, month=12):
+    def __init__(self, parent=None, year=int(time.strftime('%Y', time.localtime(time.time()))),
+                 month=int(time.strftime('%m', time.localtime(time.time())))):
         super().__init__(parent)
 
         # variables
@@ -167,7 +168,9 @@ class Calendar(QWidget):
 
         self.mCal.year = self.currentYear
         self.mCal.month = self.currentMonth
+        print("call mCal.setCalender")
         self.mCal.setCalander(self.currentYear, self.currentMonth)
+        print("call gridingDate")
         self.gridingDate(self.mCal.getCalander())
 
     def clearLayout(self, layout):
