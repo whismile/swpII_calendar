@@ -48,7 +48,7 @@ class Calendar(QWidget):
 
         # main layout
         self.mainLayout = QHBoxLayout()
-        self.mainLayout.setSizeConstraint(QLayout.SetFixedSize)
+        # self.mainLayout.setSizeConstraint(QLayout.SetFixedSize)
 
         # Left side Layout ================================
         self.leftLayout = QVBoxLayout()
@@ -64,12 +64,16 @@ class Calendar(QWidget):
 
         self.nextBtn = Button(">", self.nextMonth)
 
+        self.moveMonth.addStretch()
         self.moveMonth.addWidget(self.previousBtn)
         self.moveMonth.addWidget(self.showCurrentLabel)
         self.moveMonth.addWidget(self.nextBtn)
+        self.moveMonth.addStretch()
         self.leftLayout.addLayout(self.moveMonth)
+        self.leftLayout.addStretch()
         # -------------------------------------------------
 
+        # Set Day of Week
         self.yoilLayout = QHBoxLayout()
         yoil = ["월", "화", "수", "목", "금", "토", "일"]
         for i in yoil:
@@ -82,6 +86,7 @@ class Calendar(QWidget):
         self.calendarGrid = QGridLayout()
         self.calendarGrid.setSizeConstraint(QLayout.SetFixedSize)
         self.leftLayout.addLayout(self.calendarGrid)
+        self.leftLayout.addStretch(7)
 
         # showing status
         self.statusLabel = QLabel("btn Status")
