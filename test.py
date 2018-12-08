@@ -3,9 +3,11 @@ from PyQt5.QtWidgets import (QApplication, QWidget,
                              QLineEdit, QToolButton,
                              QSizePolicy, QLayout,
                              QGridLayout, QLabel,
-                             QVBoxLayout, QHBoxLayout)
+                             QVBoxLayout, QHBoxLayout,
+                             QTextEdit)
 
 import calendar
+import pickle
 
 
 class Button(QToolButton):
@@ -26,46 +28,64 @@ class Button(QToolButton):
 
 class Calendar(QWidget):
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, year=2018, month=12):
         super().__init__(parent)
 
         # variables
         self.startDay = 0
         self.maxDay = 0
-        self.dateSet = self.makeDateSet()[:]
+        self.currentYear = year; self.currentMonth = month; self.currentDay = 0
+        self.dateSet = self.makeDateSet(year, month)[:]
+        self.fileRoot = ".\schedules.txt"
+        self.schedule = {}
+
+        try:
+            self.schedule = pickle.load(open(self.fileRoot, "rb"))
+            print(self.schedule)
+        except EOFError:
+            pass
 
         # main layout
         self.mainLayout = QHBoxLayout()
         self.mainLayout.setSizeConstraint(QLayout.SetFixedSize)
 
-        # Left side Layout
+        # Left side Layout ================================
         self.leftLayout = QVBoxLayout()
+
+        # handling month ===============================
+        self.moveMonth = QHBoxLayout()
+
+        # showing Year and month
+        self.showCurrentLabel = QLabel(str(self.currentYear) + " / " + str(self.currentMonth))
+        self.showCurrentLabel.setAlignment(Qt.AlignCenter)
+        self.leftLayout.addWidget(self.showCurrentLabel)
 
         # grid layout to appending date Buttons
         self.calendarGrid = QGridLayout()
         self.calendarGrid.setSizeConstraint(QLayout.SetFixedSize)
-
-        # Schedules layout
-        self.scheduleLayout = QVBoxLayout()
+        self.leftLayout.addLayout(self.calendarGrid)
 
         # showing status
         self.statusLabel = QLabel("btn Status")
+        self.leftLayout.addWidget(self.statusLabel)
+        # ==================================================
+
+        # Schedules layout ==================================
+        self.scheduleLayout = QVBoxLayout()
 
         # setting scheduleBox to showing schedules
-        self.scheduleBox = QLineEdit("Please Click any Date Button")
-        self.scheduleBox.setReadOnly(True)
+        self.scheduleBox = QTextEdit("Please Click any Date Button")
         self.scheduleBox.setAlignment(Qt.AlignLeft)
+        self.scheduleBox.setReadOnly(True)
         self.scheduleLayout.addWidget(self.scheduleBox)
 
-        # Append Day Buttons ===========================
-        for row, column in enumerate(self.dateSet):
-            for col, day in enumerate(column):
-                btn = Button(day, self.btnEvent)
-                self.calendarGrid.addWidget(btn, row, col)
-        # ===============================================
+        # modifying schedule Button
+        self.modifyBtn = Button("Modifying", self.modifying)
+        self.scheduleLayout.addWidget(self.modifyBtn)
+        # ==================================================
 
-        self.leftLayout.addLayout(self.calendarGrid)
-        self.leftLayout.addWidget(self.statusLabel)
+        # Set grid
+        self.gridingDate(self.dateSet)
 
         self.mainLayout.addLayout(self.leftLayout)
         self.mainLayout.addLayout(self.scheduleLayout)
@@ -105,9 +125,55 @@ class Calendar(QWidget):
 
         return result
 
+    def gridingDate(self, arr):
+        # Append Day Buttons ===========================
+        self.clearLayout(self.calendarGrid)
+
+        arr = self.makeDateSet(self.currentYear, self.currentMonth)
+
+        for row, column in enumerate(arr):
+            for col, day in enumerate(column):
+                btn = Button(day, self.btnEvent)
+                if day is "":
+                    btn.setEnabled(False)
+                self.calendarGrid.addWidget(btn, row, col)
+        # ===============================================
+
     def btnEvent(self):
+        self.scheduleBox.setReadOnly(False)
         btn = self.sender()
         self.statusLabel.setText(btn.text() + " is Clicked.")
+        self.currentDay = btn.text()
+
+        target = str(self.currentYear) + str(self.currentMonth) + str(self.currentDay)
+        if not self.schedule.get(target):
+            self.scheduleBox.setText("None")
+        else:
+            self.scheduleBox.setText(self.schedule[target])
+
+    def modifying(self):
+        target = str(self.currentYear) + str(self.currentMonth) + str(self.currentDay)
+        self.schedule[target] = self.scheduleBox.toPlainText()
+        self.statusLabel.setText("modified")
+        print(self.schedule)
+
+    def previousMonth(self):
+        if self.currentMonth > 1:
+            self.currentMonth -= 1
+        else:
+            self.currentYear -= 1
+            self.currentMonth = 12
+
+
+
+    def clearLayout(self, layout):
+        while layout.count():
+            child = layout.takeAt(0)
+            if child.widget():
+                child.widget().deleteLater()
+
+    def closeEvent(self, event):
+        pickle.dump(self.schedule, open(self.fileRoot, "wb"))
 
 
 if __name__ == '__main__':
