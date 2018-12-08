@@ -37,7 +37,7 @@ class Calendar(QWidget):
         self.startDay = 0
         self.maxDay = 0
         self.currentYear = year; self.currentMonth = month; self.currentDay = 0
-        self.fileRoot = ".\schedules.txt"
+        self.fileRoot = "/home/yongjoon/kmu/swpII_calendar/schedules.txt"
         self.schedule = {}
 
         try:
@@ -135,6 +135,10 @@ class Calendar(QWidget):
 
                 if not before and day is self.mCal.endDay:
                     after = False
+
+                # 공휴일은 빨간색으로 설정해준다.
+                if col == 6 and row != len(arr) - 1:
+                    btn.setStyleSheet('color: red;')
 
                 self.calendarGrid.addWidget(btn, row, col)
         # ===============================================
