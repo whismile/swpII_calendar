@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import (QApplication, QWidget,
                              QGridLayout, QLabel,
                              QVBoxLayout, QHBoxLayout,
                              QTextEdit, QComboBox,
-                             QToolBar)
+                             QSpinBox, QStackedWidget)
 
 import pickle
 from calendarManager import MyCalendar, MyEvent
@@ -34,8 +34,27 @@ class Calendar(QWidget):
                  month=int(time.strftime('%m', time.localtime(time.time())))):
         super().__init__(parent)
 
-        # variables
-        self.displayCalendar = MyCalendar()
+        # Set Schedule Layout Components ===============
+        self.scheduleLayout = QVBoxLayout()
+        # -------------------------------
+        self.titleBox = QHBoxLayout()
+        self.titleLabel = QLabel("title: "); self.titleLineEdit = QLineEdit()
+        # -------------------------------
+        self.placeBox = QHBoxLayout()
+        self.placeLabel = QLabel("place: "); self.placeLineEdit = QLineEdit()
+        # -------------------------------
+        self.dateBox = QHBoxLayout()
+        self.dateLabel = QLabel("time:"); self.fromHour = QSpinBox(); self.fromMin = QSpinBox()
+        self.toHour = QSpinBox(); self.toMin = QSpinBox()
+        # -------------------------------
+        self.discription = QHBoxLayout()
+        self.contentLabel = QLabel("content: ")
+        self.content = QTextEdit()
+        # -------------------------------
+        self.modifyBtn = Button("Modifying", self.modifying)
+        # ==============================================
+
+        self.displayCalendar = myCalendar()
         self.startDay = 0
         self.maxDay = 0
         self.currentYear = year
@@ -54,23 +73,50 @@ class Calendar(QWidget):
             scheduleFile = open(self.fileRoot, "rb")
             self.displayCalendar.schedule = pickle.load(scheduleFile)
             print(self.displayCalendar.schedule)
-
         except EOFError:
             pass
 
         # main layout
         self.mainLayout = QHBoxLayout()
-        # self.mainLayout.setSizeConstraint(QLayout.SetFixedSize)
 
         # Left side Layout ================================
         self.leftLayout = QVBoxLayout()
 
-        # handling month ----------------------------------
+        # Stacked Widget Part -----------------------------
+        # Setting Stacked Widget(like a switching Tabs)
+        self.armyPeriod = QWidget()
+        self.setSchedule = QWidget()
+        self.lunaDate = QWidget()
+
+        # Design And Setting Actions each Tab. if want to Append any action, plz input the action in here.
+        self.armyPeriodUI()
+        self.setScheduleUI()
+        self.lunaDateUI()
+
+        # Appending tabs in Stack
+        self.Stack = QStackedWidget()
+        self.Stack.addWidget(self.armyPeriod)
+        self.Stack.addWidget(self.setSchedule)
+        self.Stack.addWidget(self.lunaDate)
+
+        # Switching Button layout Design And binding button with action.
+        self.tabLayout = QHBoxLayout()
+        self.tabLayout.addWidget(Button("전역일 계산기", lambda: self.display(0)))
+        self.tabLayout.addWidget(Button("캘린더", lambda: self.display(1)))
+        self.tabLayout.addWidget(Button("음력", lambda: self.display(2)))
+
+        for i in range(self.tabLayout.count()):
+            self.tabLayout.itemAt(i).widget().setStyleSheet('font-size: 8pt')
+
+        self.leftLayout.addLayout(self.tabLayout)
+        # -------------------------------------------------
+
+        # handling Year & month ----------------------------------
         self.moveMonth = QHBoxLayout()
 
         self.previousBtn = Button("<", self.previousMonth)
 
-        # showing Year and month
+        # showing Year and month using Combobox(Year range: 1980 ~ 2040, Month range: 1, 12)
         self.yearCombo = QComboBox()
         self.yearCombo.addItems([str(x) for x in range(1980, 2041)])
         self.yearCombo.setCurrentText(str(self.currentYear))
@@ -91,7 +137,7 @@ class Calendar(QWidget):
         self.leftLayout.addStretch()
         # -------------------------------------------------
 
-        # Set Day of Week
+        # Set Day of Week ---------------------------------
         self.weekDayLayout = QHBoxLayout()
         enumDays = ["일", "월", "화", "수", "목", "금", "토"]
 
@@ -101,6 +147,7 @@ class Calendar(QWidget):
             self.weekDayLayout.addWidget(label)
 
         self.leftLayout.addLayout(self.weekDayLayout)
+        # -------------------------------------------------
 
         # grid layout to appending date Buttons
         self.calendarGrid = QGridLayout()
@@ -113,46 +160,6 @@ class Calendar(QWidget):
         self.leftLayout.addWidget(self.statusLabel)
         # ==================================================
 
-        # Schedules layout ==================================
-        self.scheduleLayout = QVBoxLayout()
-        self.titleBox = QHBoxLayout()
-        self.titleLabel = QLabel("title: ")
-        self.titleLineEdit = QLineEdit()
-        self.titleBox.addWidget(self.titleLabel)
-        self.titleBox.addWidget(self.titleLineEdit)
-
-        self.placeBox = QHBoxLayout()
-        self.placeLabel = QLabel("place: ")
-        self.placeLineEdit = QLineEdit()
-        self.placeBox.addWidget(self.placeLabel)
-        self.placeBox.addWidget(self.placeLineEdit)
-
-        self.dateBox = QHBoxLayout()
-        self.dateLabel = QLabel("date: ")
-        self.dateLineEdit = QLineEdit()
-        self.dateBox.addWidget(self.dateLabel)
-        self.dateBox.addWidget(self.dateLineEdit)
-
-        self.discription = QHBoxLayout()
-        self.content = QTextEdit()
-        self.contentLabel = QLabel("content: ")
-        self.discription.addWidget(self.contentLabel)
-        self.discription.addWidget(self.content)
-
-        self.scheduleLayout.addLayout(self.titleBox)
-        self.scheduleLayout.addLayout(self.placeBox)
-        self.scheduleLayout.addLayout(self.dateBox)
-        self.scheduleLayout.addLayout(self.discription)
-        # modifying schedule Button
-        self.modifyBtn = Button("Modifying", self.modifying)
-        self.scheduleLayout.addWidget(self.modifyBtn)
-
-        for i in range(self.scheduleLayout.count()):
-            if i is not 4:
-                self.hidingWidget(self.scheduleLayout.itemAt(i).layout())
-            else:
-                self.scheduleLayout.itemAt(i).widget().hide()
-        # ==================================================
         # Set grid
         self.displayCalendar.setCalander(self.currentYear, self.currentMonth)
         self.renderDate(self.displayCalendar.getCalander())
@@ -162,7 +169,8 @@ class Calendar(QWidget):
         self.monthCombo.currentTextChanged.connect(lambda: self.selectionChanged())
 
         self.mainLayout.addLayout(self.leftLayout)
-        self.mainLayout.addLayout(self.scheduleLayout)
+        self.mainLayout.addWidget(self.Stack)
+        self.Stack.setCurrentIndex(1)   # default Tab -> set calendar
         self.setLayout(self.mainLayout)
         self.setWindowTitle("Calendar")
 
@@ -202,11 +210,7 @@ class Calendar(QWidget):
         self.displayCalendar.enrollHoliday(self.currentYear)
 
     def btnEvent(self):
-        for i in range(self.scheduleLayout.count()):
-            if i is not 4:
-                self.showingWidget(self.scheduleLayout.itemAt(i).layout())
-            else:
-                self.scheduleLayout.itemAt(i).widget().show()
+        # self.showingWidget(self.scheduleLayout)
 
         self.setFixedSize(self.mainLayout.sizeHint())
 
@@ -219,19 +223,33 @@ class Calendar(QWidget):
 
         if not targetEvent:
             self.titleLineEdit.setText("None")
+            self.placeLineEdit.clear()
+            self.fromHour.setValue(0)
+            self.fromMin.setValue(0)
+            self.toHour.setValue(0)
+            self.toMin.setValue(0)
+            self.content.clear()
 
         else:
             self.titleLineEdit.setText(targetEvent.getTitle())
             self.placeLineEdit.setText(targetEvent.getPlace())
-            self.dateLineEdit.setText(targetEvent.getDate())
+
+            timeSet = targetEvent.getDate().split(",")
+            self.fromHour.setValue(int(timeSet[0]))
+            self.fromMin.setValue(int(timeSet[1]))
+            self.toHour.setValue(int(timeSet[2]))
+            self.toMin.setValue(int(timeSet[3]))
+
             self.content.setText(targetEvent.getDiscription())
 
     def modifying(self):
         newEvent = MyEvent()
         eventList = [self.titleLineEdit.text(),
                      self.placeLineEdit.text(),
-                     self.dateLineEdit.text(),
-                     self.content.toPlainText(),]
+                     ",".join([str(self.fromHour.value()), str(self.fromMin.value()),
+                               str(self.toHour.value()), str(self.toMin.value())]),
+                     self.content.toPlainText(),
+                     ]
 
         newEvent.setEvent(*eventList)
 
@@ -281,13 +299,70 @@ class Calendar(QWidget):
         with open(self.fileRoot, "wb") as file:
             pickle.dump(self.displayCalendar.schedule, file)
 
+    def armyPeriodUI(self):
+        layout = QVBoxLayout()
+        layout.addWidget(QLabel("Army Period"))
+        self.armyPeriod.setLayout(layout)
+
+    def setScheduleUI(self):
+        # Schedules layout ==================================
+        self.titleBox.addWidget(self.titleLabel)
+        self.titleBox.addWidget(self.titleLineEdit)
+
+        self.placeBox.addWidget(self.placeLabel)
+        self.placeBox.addWidget(self.placeLineEdit)
+
+        self.fromHour.setRange(0, 24)
+        self.toHour.setRange(0, 24)
+        self.fromMin.setRange(0, 59)
+        self.toMin.setRange(0, 59)
+
+        self.fromHour.valueChanged.connect(lambda: self.toHour.setRange(self.fromHour.value(), 24))
+        # self.toHour.valueChanged.connect(lambda: self.fromHour.setRange(0, self.toHour.value()))
+
+        self.fromMin.valueChanged.connect(lambda: self.toMin.setRange(self.fromMin.value(), 59))
+        # self.toMin.valueChanged.connect(lambda: self.fromMin.setRange(0, self.toMin.value()))
+
+        self.dateBox.addWidget(self.dateLabel)
+        self.dateBox.addWidget(self.fromHour); self.dateBox.addWidget(self.fromMin)
+        self.dateBox.addWidget(QLabel("    ~ "))
+        self.dateBox.addWidget(self.toHour); self.dateBox.addWidget(self.toMin)
+
+        self.contentLabel.setAlignment(Qt.AlignTop)
+        self.discription.addWidget(self.contentLabel)
+        self.discription.addWidget(self.content)
+
+        self.scheduleLayout.addLayout(self.titleBox)
+        self.scheduleLayout.addLayout(self.placeBox)
+        self.scheduleLayout.addLayout(self.dateBox)
+        self.scheduleLayout.addLayout(self.discription)
+        # modifying schedule Button
+        self.scheduleLayout.addWidget(self.modifyBtn)
+        self.setSchedule.setLayout(self.scheduleLayout)
+
+    def lunaDateUI(self):
+        layout = QVBoxLayout()
+        layout.addWidget(QLabel("Luna Date"))
+        self.lunaDate.setLayout(layout)
+
+    def display(self, i):
+        self.Stack.setCurrentIndex(i)
+
     def hidingWidget(self, layout):
         for i in range(layout.count()):
-            layout.itemAt(i).widget().hide()
+            item = layout.itemAt(i)
+            if item.widget() is not None:
+                layout.itemAt(i).widget().hide()
+            elif item.layout() is not None:
+                self.hidingWidget(layout.itemAt(i).layout())
 
     def showingWidget(self, layout):
         for i in range(layout.count()):
-            layout.itemAt(i).widget().show()
+            item = layout.itemAt(i)
+            if item.widget() is not None:
+                layout.itemAt(i).widget().show()
+            elif item.layout() is not None:
+                self.showingWidget(layout.itemAt(i).layout())
 
 
 if __name__ == '__main__':
