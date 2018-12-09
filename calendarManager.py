@@ -2,12 +2,21 @@ import calendar
 
 class myCalendar:
     def __init__(self):
+        self._year = 0
+        self._month = 0
         self.calendar = []
         self.startDay = 0
         self.endDay = 0
+        self.schedule = {}
 
     def getCalander(self):
         return self.calendar
+
+    def setYear(self, year):
+        self._year = year
+
+    def setMonth(self, month):
+        self._month = month
 
     def setCalander(self, year, month):
         print("call makeCalendar")
@@ -33,9 +42,10 @@ class myCalendar:
         self.startDay, self.endDay = calendar.monthrange(year, month)
 
         # 1번째 줄은 첫째 날이 등장하기전까지 비어있기 때문에 따로 처리한다.
-        firstLineCount = 6 - self.startDay
-        newCalendar.append([x + 1 for x in range(firstLineCount)])
-        day += firstLineCount
+        if self.startDay is not 6:
+            firstLineCount = 6 - self.startDay
+            newCalendar.append([x + 1 for x in range(firstLineCount)])
+            day += firstLineCount
 
         # 2번째 줄부터는 7일 단위로 개행하면서 List를 채워나간다.
         while True:
@@ -50,9 +60,27 @@ class myCalendar:
 
             newCalendar.append(rowList)
 
+class myEvent:
+    def __init__(self):
+        self.title = ''
+        self.place = ''
+        self.date = ''
+        self.discription = ''
+
+    def setTitle(self, title):
+        self.title = title
+
+    def setPlace(self, place):
+        self.place = place
+
+    def setDate(self, date):
+        self.date = date
+
+    def setDiscription(self, text):
+        self.discription = text
 
 if __name__ == '__main__':
     cal = myCalendar()
     print(cal.makeCalendar(2018, 12))
-    cal.setCalander(2018, 1)
+    cal.setCalander(2019, 9)
     print(cal.calendar)
