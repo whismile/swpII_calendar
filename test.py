@@ -62,6 +62,7 @@ class Calendar(QWidget):
         self.currentDay = 0
         self.firstClick = True
         self.displayCalendar.loadHoliday()
+        self.today = time.localtime()
 
         if os.name == 'nt':
             self.fileRoot = ".\schedules.txt"
@@ -195,6 +196,13 @@ class Calendar(QWidget):
                 else:
                     if (row == len(newCalendar) - 1) and (day // 10 == 0):
                         btn.setEnabled(False)
+
+                # if this day have any event represent event
+                key = '-'.join([str(self.currentYear), str(self.currentMonth), str(day)])
+                if key in self.displayCalendar.schedule.keys() and btn.isEnabled():
+                    btn.setStyleSheet('color: blue;')
+                    btn.setStyleSheet('background-color: skyblue;')
+                    btn.setToolTip(self.displayCalendar.schedule[key].getTitle())
 
                 for restMonth, restDay, title in self.displayCalendar.holidays:
                     if restMonth == self.currentMonth and restDay == day and btn.isEnabled():
@@ -344,7 +352,46 @@ class Calendar(QWidget):
 
     def lunaDateUI(self):
         layout = QVBoxLayout()
-        layout.addWidget(QLabel("Luna Date"))
+        #layout.addWidget(QLabel("Luna Date"))
+        topLayout = QHBoxLayout()
+        self.yearLine = QLineEdit()
+        modeComboBox = QComboBox()
+        modeComboBox.addItems(["양력 -> 음력", "음력 -> 양력"])
+        convertBtn = Button("convert", self.lunarBtnEvent)
+        resetBtn = Button("reset", self.lunarBtnEvent)
+
+        bottomLayout = QVBoxLayout()
+        titleBox = QHBoxLayout()
+        solarBox = QHBoxLayout()
+        lunarBox = QHBoxLayout()
+        self.todayLabel = QLabel("오늘의 날짜정보")
+        self.todayLabel.setStyleSheet('color: red; font-size: 18px;')
+        solarLabel = QLabel("양력날짜")
+        solarLabel.setStyleSheet('color: gray;')
+        todaySolarDay = "%04d-%02d-%02d" % (self.today.tm_year, self.today.tm_mon, self.today.tm_mday)
+        solarDateLabel = QLabel(todaySolarDay)
+        lunarLabel = QLabel("음력날짜")
+        lunarLabel.setStyleSheet('color: gray;')
+        self.lunarDateLabel = QLabel(self.displayCalendar.calculator.getToLunarDate(
+            self.today.tm_year, self.today.tm_mon, self.today.tm_mday
+        ))
+
+        titleBox.addWidget(self.todayLabel)
+        solarBox.addWidget(solarLabel)
+        solarBox.addWidget(solarDateLabel)
+        lunarBox.addWidget(lunarLabel)
+        lunarBox.addWidget(self.lunarDateLabel)
+        bottomLayout.addLayout(titleBox)
+        bottomLayout.addLayout(solarBox)
+        bottomLayout.addLayout(lunarBox)
+
+        topLayout.addWidget(self.yearLine)
+        topLayout.addWidget(modeComboBox)
+        topLayout.addWidget(convertBtn)
+        topLayout.addWidget(resetBtn)
+
+        layout.addLayout(topLayout)
+        layout.addLayout(bottomLayout)
         self.lunaDate.setLayout(layout)
 
     def display(self, i):
@@ -367,10 +414,28 @@ class Calendar(QWidget):
                 self.showingWidget(layout.itemAt(i).layout())
 
 
+    def lunarBtnEvent(self):
+        btn = self.sender()
+        key = btn.text()
+
+        if key == 'reset':
+            self.yearLine.setText('')
+            self.todayLabel.setText('오늘의 날짜정보')
+            self.todayLabel.setStyleSheet('color: red; font-size: 18px;')
+
+        elif key == 'convert':
+            text = self.yearLine.text()
+            self.todayLabel.setText("양력 {}년 {}월 {}일".format(int(text[:4]), text[4:6], text[6:]))
+            self.todayLabel.setStyleSheet('font-weight: bold; color: black; font-size: 12px;')
+            date = self.displayCalendar.calculator.parseDate(text)
+            lunarDate = self.displayCalendar.calculator.getToLunarDate(*date)
+            self.lunarDateLabel.setText(lunarDate)
+
 if __name__ == '__main__':
     import sys
 
     app = QApplication(sys.argv)
     myCalendar = Calendar()
+    myCalendar.setStyleSheet('background-color: white;')
     myCalendar.show()
     sys.exit(app.exec_())
