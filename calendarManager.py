@@ -1,4 +1,5 @@
 import calendar
+import pickle
 
 class myCalendar:
     def __init__(self):
@@ -79,8 +80,32 @@ class myEvent:
     def setDiscription(self, text):
         self.discription = text
 
+    def getTitle(self):
+        return self.title
+
+    def getPlace(self):
+        return self.place
+
+    def getDate(self):
+        return self.date
+
+    def getDiscription(self):
+        return self.discription
+
+    def setEvent(self, title, place, date, discription):
+        self.setTitle(title)
+        self.setPlace(place)
+        self.setDate(date)
+        self.setDiscription(discription)
+
 if __name__ == '__main__':
     cal = myCalendar()
+    event = myEvent()
+    event.setTitle("new")
+    event.setPlace("kmu")
+    event.setDate("2018")
+    event.setDiscription("Test")
+
     print(cal.makeCalendar(2018, 12))
     cal.setCalander(2019, 9)
     print(cal.calendar)

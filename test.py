@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import (QApplication, QWidget,
                              QToolBar)
 
 import pickle
-import calendarManager
+from calendarManager import myCalendar, myEvent
 import time
 
 
@@ -35,6 +35,7 @@ class Calendar(QWidget):
         super().__init__(parent)
 
         # variables
+        self.displayCalendar = myCalendar()
         self.startDay = 0
         self.maxDay = 0
         self.currentYear = year
@@ -43,8 +44,9 @@ class Calendar(QWidget):
         self.fileRoot = "/home/yongjoon/kmu/swpII_calendar/schedules.txt"
 
         try:
-            self.schedule = pickle.load(open(self.fileRoot, "rb"))
-            print(self.schedule)
+            scheduleFile = open(self.fileRoot, "rb")
+            self.displayCalendar.schedule = pickle.load(scheduleFile)
+            print(self.displayCalendar.schedule)
 
         except EOFError:
             pass
@@ -100,14 +102,6 @@ class Calendar(QWidget):
 
         # Schedules layout ==================================
         self.scheduleLayout = QVBoxLayout()
-        '''
-        # setting scheduleBox to showing schedules
-        self.scheduleBox = QTextEdit("Please Click any Date Button")
-        self.scheduleBox.setAlignment(Qt.AlignLeft)
-        self.scheduleBox.setReadOnly(True)
-        self.scheduleLayout.addWidget(self.scheduleBox)
-        '''
-
         self.titleBox = QHBoxLayout()
         self.titleLabel = QLabel("title: ")
         self.titleLineEdit = QLineEdit()
@@ -142,7 +136,6 @@ class Calendar(QWidget):
         # ==================================================
 
         # Set grid
-        self.displayCalendar = calendarManager.myCalendar()
         self.displayCalendar.setCalander(self.currentYear, self.currentMonth)
         self.renderDate(self.displayCalendar.getCalander())
 
@@ -193,19 +186,22 @@ class Calendar(QWidget):
             self.titleLineEdit.setText("None")
 
         else:
-            self.titleLineEdit.setText(targetEvent.title)
-            self.placeLineEdit.setText(targetEvent.place)
-            self.dateLineEdit.setText(targetEvent.date)
-            self.content.setText(targetEvent.discription)
+            self.titleLineEdit.setText(targetEvent.getTitle())
+            self.placeLineEdit.setText(targetEvent.getPlace())
+            self.dateLineEdit.setText(targetEvent.getDate())
+            self.content.setText(targetEvent.getDiscription())
 
 
     def modifying(self):
+        newEvent = myEvent()
+        eventList = [self.titleLineEdit.text(),
+                     self.placeLineEdit.text(),
+                     self.dateLineEdit.text(),
+                     self.content.toPlainText(),]
+
+        newEvent.setEvent(*eventList)
+
         target = "-".join([str(self.currentYear), str(self.currentMonth), str(self.currentDay)])
-        newEvent = calendarManager.myEvent()
-        newEvent.setTitle(self.titleLineEdit.text())
-        newEvent.setPlace(self.placeLineEdit.text())
-        newEvent.setDate(self.dateLineEdit.text())
-        newEvent.setDiscription(self.content.toPlainText())
         self.displayCalendar.schedule[target] = newEvent
         self.statusLabel.setText("modified")
 
@@ -248,8 +244,8 @@ class Calendar(QWidget):
                 child.widget().deleteLater()
 
     def closeEvent(self, event):
-        pickle.dump(self.schedule, open(self.fileRoot, "wb"))
-
+        with open(self.fileRoot, "wb") as file:
+            pickle.dump(self.displayCalendar.schedule, file)
 
 if __name__ == '__main__':
     import sys
