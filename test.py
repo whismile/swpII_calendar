@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import (QApplication, QWidget,
                              QSizePolicy, QLayout,
                              QGridLayout, QLabel,
                              QVBoxLayout, QHBoxLayout,
-                             QTextEdit)
+                             QTextEdit, QComboBox)
 
 import pickle
 import calendarManager
@@ -37,7 +37,7 @@ class Calendar(QWidget):
         self.startDay = 0
         self.maxDay = 0
         self.currentYear = year; self.currentMonth = month; self.currentDay = 0
-        self.fileRoot = "/home/yongjoon/kmu/swpII_calendar/schedules.txt"
+        self.fileRoot = ".\schedules.txt"
         self.schedule = {}
 
         try:
@@ -75,7 +75,7 @@ class Calendar(QWidget):
 
         # Set Day of Week
         self.yoilLayout = QHBoxLayout()
-        yoil = ["월", "화", "수", "목", "금", "토", "일"]
+        yoil = ["일", "월", "화", "수", "목", "금", "토"]
         for i in yoil:
             label = QLabel(i)
             label.setAlignment(Qt.AlignCenter)
@@ -137,7 +137,7 @@ class Calendar(QWidget):
                     after = False
 
                 # 공휴일은 빨간색으로 설정해준다.
-                if col == 6 and row != len(arr) - 1:
+                if col == 0 and row != len(arr):
                     btn.setStyleSheet('color: red;')
 
                 self.calendarGrid.addWidget(btn, row, col)
@@ -146,7 +146,7 @@ class Calendar(QWidget):
     def btnEvent(self):
         self.scheduleBox.setReadOnly(False)
         btn = self.sender()
-        self.statusLabel.setText(btn.text() + " is Clicked.")
+        self.statusLabel.setText("Day: " + btn.text() + " is Clicked.")
         self.currentDay = btn.text()
 
         target = str(self.currentYear) + str(self.currentMonth) + str(self.currentDay)
