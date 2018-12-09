@@ -42,7 +42,7 @@ class Calendar(QWidget):
         self.currentMonth = month
         self.currentDay = 0
         self.firstClick = True
-        self.fileRoot = ".\schedules.txt"
+        self.fileRoot = "./schedules.txt"
 
         try:
             scheduleFile = open(self.fileRoot, "rb")
