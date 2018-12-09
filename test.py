@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import (QApplication, QWidget,
                              QGridLayout, QLabel,
                              QVBoxLayout, QHBoxLayout,
                              QTextEdit, QComboBox,
-                             QToolBar)
+                             QSpinBox)
 
 import pickle
 from calendarManager import myCalendar, myEvent
@@ -122,14 +122,28 @@ class Calendar(QWidget):
         self.placeBox.addWidget(self.placeLineEdit)
 
         self.dateBox = QHBoxLayout()
-        self.dateLabel = QLabel("date: ")
-        self.dateLineEdit = QLineEdit()
+        self.dateLabel = QLabel("time:")
+
+        self.fromHour = QSpinBox(); self.fromHour.setRange(0, 24)
+        self.toHour = QSpinBox(); self.toHour.setRange(0, 24)
+        self.fromMin = QSpinBox();self.fromMin.setRange(0, 59)
+        self.toMin = QSpinBox(); self.toMin.setRange(0, 59)
+
+        self.fromHour.valueChanged.connect(lambda: self.toHour.setRange(self.fromHour.value(), 24))
+        # self.toHour.valueChanged.connect(lambda: self.fromHour.setRange(0, self.toHour.value()))
+
+        self.fromMin.valueChanged.connect(lambda: self.toMin.setRange(self.fromMin.value(), 59))
+        # self.toMin.valueChanged.connect(lambda: self.fromMin.setRange(0, self.toMin.value()))
+
         self.dateBox.addWidget(self.dateLabel)
-        self.dateBox.addWidget(self.dateLineEdit)
+        self.dateBox.addWidget(self.fromHour); self.dateBox.addWidget(self.fromMin)
+        self.dateBox.addWidget(QLabel("    ~ "))
+        self.dateBox.addWidget(self.toHour); self.dateBox.addWidget(self.toMin)
 
         self.discription = QHBoxLayout()
         self.content = QTextEdit()
         self.contentLabel = QLabel("content: ")
+        self.contentLabel.setAlignment(Qt.AlignTop)
         self.discription.addWidget(self.contentLabel)
         self.discription.addWidget(self.content)
 
@@ -141,11 +155,7 @@ class Calendar(QWidget):
         self.modifyBtn = Button("Modifying", self.modifying)
         self.scheduleLayout.addWidget(self.modifyBtn)
 
-        for i in range(self.scheduleLayout.count()):
-            if i is not 4:
-                self.hidingWidget(self.scheduleLayout.itemAt(i).layout())
-            else:
-                self.scheduleLayout.itemAt(i).widget().hide()
+        self.hidingWidget(self.scheduleLayout)
         # ==================================================
         # Set grid
         self.displayCalendar.setCalander(self.currentYear, self.currentMonth)
@@ -190,11 +200,7 @@ class Calendar(QWidget):
         # ===============================================
 
     def btnEvent(self):
-        for i in range(self.scheduleLayout.count()):
-            if i is not 4:
-                self.showingWidget(self.scheduleLayout.itemAt(i).layout())
-            else:
-                self.scheduleLayout.itemAt(i).widget().show()
+        self.showingWidget(self.scheduleLayout)
 
         self.setFixedSize(self.mainLayout.sizeHint())
 
@@ -207,19 +213,33 @@ class Calendar(QWidget):
 
         if not targetEvent:
             self.titleLineEdit.setText("None")
+            self.placeLineEdit.clear()
+            self.fromHour.setValue(0)
+            self.fromMin.setValue(0)
+            self.toHour.setValue(0)
+            self.toMin.setValue(0)
+            self.content.clear()
 
         else:
             self.titleLineEdit.setText(targetEvent.getTitle())
             self.placeLineEdit.setText(targetEvent.getPlace())
-            self.dateLineEdit.setText(targetEvent.getDate())
+
+            timeSet = targetEvent.getDate().split(",")
+            self.fromHour.setValue(int(timeSet[0]))
+            self.fromMin.setValue(int(timeSet[1]))
+            self.toHour.setValue(int(timeSet[2]))
+            self.toMin.setValue(int(timeSet[3]))
+
             self.content.setText(targetEvent.getDiscription())
 
     def modifying(self):
         newEvent = myEvent()
         eventList = [self.titleLineEdit.text(),
                      self.placeLineEdit.text(),
-                     self.dateLineEdit.text(),
-                     self.content.toPlainText(),]
+                     ",".join([str(self.fromHour.value()), str(self.fromMin.value()),
+                               str(self.toHour.value()), str(self.toMin.value())]),
+                     self.content.toPlainText(),
+                     ]
 
         newEvent.setEvent(*eventList)
 
@@ -271,11 +291,19 @@ class Calendar(QWidget):
 
     def hidingWidget(self, layout):
         for i in range(layout.count()):
-            layout.itemAt(i).widget().hide()
+            item = layout.itemAt(i)
+            if item.widget() is not None:
+                layout.itemAt(i).widget().hide()
+            elif item.layout() is not None:
+                self.hidingWidget(layout.itemAt(i).layout())
 
     def showingWidget(self, layout):
         for i in range(layout.count()):
-            layout.itemAt(i).widget().show()
+            item = layout.itemAt(i)
+            if item.widget() is not None:
+                layout.itemAt(i).widget().show()
+            elif item.layout() is not None:
+                self.showingWidget(layout.itemAt(i).layout())
 
 
 if __name__ == '__main__':

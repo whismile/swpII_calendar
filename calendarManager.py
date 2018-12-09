@@ -75,7 +75,7 @@ class myEvent:
         self.place = place
 
     def setDate(self, date):
-        self.date = date
+        self.date = date[:]
 
     def setDiscription(self, text):
         self.discription = text
