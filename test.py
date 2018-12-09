@@ -54,14 +54,14 @@ class Calendar(QWidget):
         self.modifyBtn = Button("Modifying", self.modifying)
         # ==============================================
 
-        self.displayCalendar = myCalendar()
+        self.displayCalendar = MyCalendar()
         self.startDay = 0
         self.maxDay = 0
         self.currentYear = year
         self.currentMonth = month
         self.currentDay = 0
         self.firstClick = True
-        self.displayCalendar.enrollHoliday(year)
+        self.displayCalendar.loadHoliday()
 
         if os.name == 'nt':
             self.fileRoot = ".\schedules.txt"
@@ -196,9 +196,10 @@ class Calendar(QWidget):
                     if (row == len(newCalendar) - 1) and (day // 10 == 0):
                         btn.setEnabled(False)
 
-                for restMonth, restDay, _ in self.displayCalendar.holidays:
+                for restMonth, restDay, title in self.displayCalendar.holidays:
                     if restMonth == self.currentMonth and restDay == day and btn.isEnabled():
                         btn.setStyleSheet('color: red;')
+                        btn.setToolTip(title)
                         break
 
                 # 공휴일은 빨간색으로 설정해준다.
@@ -208,6 +209,7 @@ class Calendar(QWidget):
                 self.calendarGrid.addWidget(btn, row, col)
         # ===============================================
         self.displayCalendar.enrollHoliday(self.currentYear)
+        self.displayCalendar.loadHoliday()
 
     def btnEvent(self):
         # self.showingWidget(self.scheduleLayout)

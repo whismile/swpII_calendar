@@ -73,19 +73,27 @@ class MyCalendar:
             (8, 15, "광복절"),
             (10, 3, "개천절"),
             (10, 9, "한글날"),
-            (12, 25, "크리스마스")
+            (12, 25, "크리스마스"),
         ]
 
         lunarHoliday = [
             self.calculator.getSolarHoliday(year, 1, 1, "설날"),
             self.calculator.getSolarHoliday(year, 4, 8, "부처님오신날"),
-            self.calculator.getSolarHoliday(year, 8, 15, "추석"),
+            self.calculator.getSolarHoliday(year, 8, 15, "추석")
         ]
 
-        self.holidays = holiday[:] + lunarHoliday[:]
+        for month, day, title in lunarHoliday[::-1]:
+            lunarHoliday.append((month, day - 1, title))
+            lunarHoliday.append((month, day + 1, title))
+
+        holidays = holiday[:] + lunarHoliday[:]
 
         with open("./holiday.txt", "wb") as f:
-            pickle.dump(self.holidays, f)
+            pickle.dump(holidays, f)
+
+    def loadHoliday(self):
+        with open('./holiday.txt', 'rb') as f:
+            self.holidays = pickle.load(f)
 
 class MyEvent:
     def __init__(self):
@@ -125,4 +133,7 @@ class MyEvent:
         self.setDiscription(discription)
 
 if __name__ == '__main__':
-    pass
+    cal = MyCalendar()
+    cal.enrollHoliday(2018)
+    for i in cal.holidays:
+        print(i)
