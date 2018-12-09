@@ -1,14 +1,17 @@
 import calendar
+from calendarCalculator import CalendarCalculator
 import pickle
 
-class myCalendar:
+class MyCalendar:
     def __init__(self):
+        self.calculator = CalendarCalculator()
         self._year = 0
         self._month = 0
         self.calendar = []
         self.startDay = 0
         self.endDay = 0
         self.schedule = {}
+        self.holidays = []
 
     def getCalander(self):
         return self.calendar
@@ -61,7 +64,30 @@ class myCalendar:
 
             newCalendar.append(rowList)
 
-class myEvent:
+    def enrollHoliday(self, year):
+        holiday = [
+            (1, 1, "신정"),
+            (3, 1, "삼일절"),
+            (5, 5, "어린이날"),
+            (6, 6, "현충일"),
+            (8, 15, "광복절"),
+            (10, 3, "개천절"),
+            (10, 9, "한글날"),
+            (12, 25, "크리스마스")
+        ]
+
+        lunarHoliday = [
+            self.calculator.getSolarHoliday(year, 1, 1, "설날"),
+            self.calculator.getSolarHoliday(year, 4, 8, "부처님오신날"),
+            self.calculator.getSolarHoliday(year, 8, 15, "추석"),
+        ]
+
+        self.holidays = holiday[:] + lunarHoliday[:]
+
+        with open("./holiday.txt", "wb") as f:
+            pickle.dump(self.holidays, f)
+
+class MyEvent:
     def __init__(self):
         self.title = ''
         self.place = ''
@@ -99,13 +125,4 @@ class myEvent:
         self.setDiscription(discription)
 
 if __name__ == '__main__':
-    cal = myCalendar()
-    event = myEvent()
-    event.setTitle("new")
-    event.setPlace("kmu")
-    event.setDate("2018")
-    event.setDiscription("Test")
-
-    print(cal.makeCalendar(2018, 12))
-    cal.setCalander(2019, 9)
-    print(cal.calendar)
+    pass

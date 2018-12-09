@@ -8,8 +8,9 @@ from PyQt5.QtWidgets import (QApplication, QWidget,
                              QToolBar)
 
 import pickle
-from calendarManager import myCalendar, myEvent
+from calendarManager import MyCalendar, MyEvent
 import time
+import os
 
 
 class Button(QToolButton):
@@ -27,7 +28,6 @@ class Button(QToolButton):
         size.setWidth(max(size.width(), size.height()))
         return size
 
-
 class Calendar(QWidget):
 
     def __init__(self, parent=None, year=int(time.strftime('%Y', time.localtime(time.time()))),
@@ -35,14 +35,20 @@ class Calendar(QWidget):
         super().__init__(parent)
 
         # variables
-        self.displayCalendar = myCalendar()
+        self.displayCalendar = MyCalendar()
         self.startDay = 0
         self.maxDay = 0
         self.currentYear = year
         self.currentMonth = month
         self.currentDay = 0
         self.firstClick = True
-        self.fileRoot = "./schedules.txt"
+        self.displayCalendar.enrollHoliday(year)
+
+        if os.name == 'nt':
+            self.fileRoot = ".\schedules.txt"
+
+        else:
+            self.fileRoot = "./schedules.txt"
 
         try:
             scheduleFile = open(self.fileRoot, "rb")
@@ -182,12 +188,18 @@ class Calendar(QWidget):
                     if (row == len(newCalendar) - 1) and (day // 10 == 0):
                         btn.setEnabled(False)
 
+                for restMonth, restDay, _ in self.displayCalendar.holidays:
+                    if restMonth == self.currentMonth and restDay == day and btn.isEnabled():
+                        btn.setStyleSheet('color: red;')
+                        break
+
                 # 공휴일은 빨간색으로 설정해준다.
                 if col == 0 and btn.isEnabled():
                     btn.setStyleSheet('color: red;')
 
                 self.calendarGrid.addWidget(btn, row, col)
         # ===============================================
+        self.displayCalendar.enrollHoliday(self.currentYear)
 
     def btnEvent(self):
         for i in range(self.scheduleLayout.count()):
@@ -215,7 +227,7 @@ class Calendar(QWidget):
             self.content.setText(targetEvent.getDiscription())
 
     def modifying(self):
-        newEvent = myEvent()
+        newEvent = MyEvent()
         eventList = [self.titleLineEdit.text(),
                      self.placeLineEdit.text(),
                      self.dateLineEdit.text(),
