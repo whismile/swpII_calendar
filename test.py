@@ -183,7 +183,7 @@ class Calendar(QWidget):
 
     def btnEvent(self):
         btn = self.sender()
-        self.statusLabel.setText(btn.text() + " is Clicked.")
+        self.statusLabel.setText("Day: " + btn.text() + " is Clicked.")
         self.currentDay = btn.text()
 
         target = "-".join([str(self.currentYear), str(self.currentMonth), str(self.currentDay)])
