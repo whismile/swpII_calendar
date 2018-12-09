@@ -191,7 +191,6 @@ class Calendar(QWidget):
             self.dateLineEdit.setText(targetEvent.getDate())
             self.content.setText(targetEvent.getDiscription())
 
-
     def modifying(self):
         newEvent = myEvent()
         eventList = [self.titleLineEdit.text(),
