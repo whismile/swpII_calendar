@@ -41,7 +41,8 @@ class Calendar(QWidget):
         self.currentYear = year
         self.currentMonth = month
         self.currentDay = 0
-        self.fileRoot = "/home/yongjoon/kmu/swpII_calendar/schedules.txt"
+        self.firstClick = True
+        self.fileRoot = ".\schedules.txt"
 
         try:
             scheduleFile = open(self.fileRoot, "rb")
@@ -64,14 +65,20 @@ class Calendar(QWidget):
         self.previousBtn = Button("<", self.previousMonth)
 
         # showing Year and month
-        self.showCurrentLabel = QLabel(str(self.currentYear) + " / " + str(self.currentMonth))
-        self.showCurrentLabel.setAlignment(Qt.AlignCenter)
+        self.yearCombo = QComboBox()
+        self.yearCombo.addItems([str(x) for x in range(1980, 2041)])
+        self.yearCombo.setCurrentText(str(self.currentYear))
+
+        self.monthCombo = QComboBox()
+        self.monthCombo.addItems([str(x) for x in range(1, 13)])
+        self.monthCombo.setCurrentText(str(self.currentMonth))
 
         self.nextBtn = Button(">", self.nextMonth)
 
         self.moveMonth.addStretch()
         self.moveMonth.addWidget(self.previousBtn)
-        self.moveMonth.addWidget(self.showCurrentLabel)
+        self.moveMonth.addWidget(self.yearCombo)
+        self.moveMonth.addWidget(self.monthCombo)
         self.moveMonth.addWidget(self.nextBtn)
         self.moveMonth.addStretch()
         self.leftLayout.addLayout(self.moveMonth)
@@ -133,11 +140,20 @@ class Calendar(QWidget):
         # modifying schedule Button
         self.modifyBtn = Button("Modifying", self.modifying)
         self.scheduleLayout.addWidget(self.modifyBtn)
-        # ==================================================
 
+        for i in range(self.scheduleLayout.count()):
+            if i is not 4:
+                self.hidingWidget(self.scheduleLayout.itemAt(i).layout())
+            else:
+                self.scheduleLayout.itemAt(i).widget().hide()
+        # ==================================================
         # Set grid
         self.displayCalendar.setCalander(self.currentYear, self.currentMonth)
         self.renderDate(self.displayCalendar.getCalander())
+
+        # Set ComboBox Changing Event
+        self.yearCombo.currentTextChanged.connect(lambda: self.selectionChanged())
+        self.monthCombo.currentTextChanged.connect(lambda: self.selectionChanged())
 
         self.mainLayout.addLayout(self.leftLayout)
         self.mainLayout.addLayout(self.scheduleLayout)
@@ -147,7 +163,6 @@ class Calendar(QWidget):
     def renderDate(self, newCalendar):
         # =========== Append Day Buttons ===============
         self.clearLayout(self.calendarGrid)
-        self.showCurrentLabel.setText(str(self.currentYear) + " / " + str(self.currentMonth))
         toggle = True
 
         # Enroll button
@@ -168,13 +183,21 @@ class Calendar(QWidget):
                         btn.setEnabled(False)
 
                 # 공휴일은 빨간색으로 설정해준다.
-                if col == 0 and (row != 0 or day == 1):
+                if col == 0 and btn.isEnabled():
                     btn.setStyleSheet('color: red;')
 
                 self.calendarGrid.addWidget(btn, row, col)
         # ===============================================
 
     def btnEvent(self):
+        for i in range(self.scheduleLayout.count()):
+            if i is not 4:
+                self.showingWidget(self.scheduleLayout.itemAt(i).layout())
+            else:
+                self.scheduleLayout.itemAt(i).widget().show()
+
+        self.setFixedSize(self.mainLayout.sizeHint())
+
         btn = self.sender()
         self.statusLabel.setText("Day: " + btn.text() + " is Clicked.")
         self.currentDay = btn.text()
@@ -206,30 +229,30 @@ class Calendar(QWidget):
 
     # rendering previous month calendar
     def previousMonth(self):
-        btn = self.sender()
-        print(btn.text())
-
         if self.currentMonth is 1:
             self.currentYear -= 1
+            self.yearCombo.setCurrentText(str(self.currentYear))
             self.currentMonth = 12
+            self.monthCombo.setCurrentText(str(self.currentMonth))
 
         else:
             self.currentMonth -= 1
-
-        self.displayCalendar.setYear(self.currentYear)
-        self.displayCalendar.setMonth(self.currentMonth)
-        self.displayCalendar.setCalander(self.currentYear, self.currentMonth)
-        self.renderDate(self.displayCalendar.getCalander())
+            self.monthCombo.setCurrentText(str(self.currentMonth))
 
     # rendering next month calendar
     def nextMonth(self):
-        btn = self.sender()
-        print(btn.text())
         if self.currentMonth is 12:
             self.currentYear += 1
+            self.yearCombo.setCurrentText(str(self.currentYear))
             self.currentMonth = 1
+            self.monthCombo.setCurrentText(str(self.currentMonth))
         else:
             self.currentMonth += 1
+            self.monthCombo.setCurrentText(str(self.currentMonth))
+
+    def selectionChanged(self):
+        self.currentYear = int(self.yearCombo.currentText())
+        self.currentMonth = int(self.monthCombo.currentText())
 
         self.displayCalendar.setYear(self.currentYear)
         self.displayCalendar.setMonth(self.currentMonth)
@@ -245,6 +268,15 @@ class Calendar(QWidget):
     def closeEvent(self, event):
         with open(self.fileRoot, "wb") as file:
             pickle.dump(self.displayCalendar.schedule, file)
+
+    def hidingWidget(self, layout):
+        for i in range(layout.count()):
+            layout.itemAt(i).widget().hide()
+
+    def showingWidget(self, layout):
+        for i in range(layout.count()):
+            layout.itemAt(i).widget().show()
+
 
 if __name__ == '__main__':
     import sys
