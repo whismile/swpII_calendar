@@ -95,14 +95,14 @@ class MyCalendar:
         holidays = holiday[:] + lunarHoliday[:]
 
         try:
-            with open("./holiday.txt", "wb") as f:
+            with open("./schedules/holiday.txt", "wb") as f:
                 pickle.dump(holidays, f)
         except:
             return False
 
     def loadHoliday(self):
         try:
-            with open('./holiday.txt', 'rb') as f:
+            with open('./schedules/holiday.txt', 'rb') as f:
                 self.holidays = pickle.load(f)
         except:
             return False
