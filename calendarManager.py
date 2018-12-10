@@ -43,6 +43,9 @@ class MyCalendar:
             self.calendar[-1].append(i+1)
 
     def makeCalendar(self, year, month):
+        if not (isinstance(year, int) and isinstance(month, int)):
+            return False
+
         newCalendar = []
         day = 0
         self.startDay, self.endDay = calendar.monthrange(year, month)
@@ -90,12 +93,18 @@ class MyCalendar:
 
         holidays = holiday[:] + lunarHoliday[:]
 
-        with open("./holiday.txt", "wb") as f:
-            pickle.dump(holidays, f)
+        try:
+            with open("./holiday.txt", "wb") as f:
+                pickle.dump(holidays, f)
+        except:
+            return False
 
     def loadHoliday(self):
-        with open('./holiday.txt', 'rb') as f:
-            self.holidays = pickle.load(f)
+        try:
+            with open('./holiday.txt', 'rb') as f:
+                self.holidays = pickle.load(f)
+        except:
+            return False
 
 class MyEvent:
     def __init__(self):
@@ -136,6 +145,7 @@ class MyEvent:
 
 if __name__ == '__main__':
     cal = MyCalendar()
+    print(cal.makeCalendar(2037, 9))
     cal.enrollHoliday(2018)
     for i in cal.holidays:
         print(i)
