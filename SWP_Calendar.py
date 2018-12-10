@@ -261,7 +261,7 @@ class Calendar(QWidget):
             self.toHour.setValue(int(timeSet[2]))
             self.toMin.setValue(int(timeSet[3]))
 
-            self.content.setText(targetEvent.getDiscription())
+            self.content.setText(targetEvent.getDescription())
 
     def modifying(self):
         newEvent = MyEvent()
@@ -323,7 +323,7 @@ class Calendar(QWidget):
         for target in myEvent.keys():
             title = myEvent[target].title
             place = myEvent[target].place
-            discription = myEvent[target].discription
+            discription = myEvent[target].getDescription()
 
             if (title, place, discription) == ('', '', ''):
                 keys.append(target)
@@ -436,8 +436,10 @@ class Calendar(QWidget):
     def hidingWidget(self, layout):
         for i in range(layout.count()):
             item = layout.itemAt(i)
+
             if item.widget() is not None:
                 layout.itemAt(i).widget().hide()
+
             elif item.layout() is not None:
                 self.hidingWidget(layout.itemAt(i).layout())
 
