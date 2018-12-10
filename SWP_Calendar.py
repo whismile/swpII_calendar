@@ -86,26 +86,22 @@ class Calendar(QWidget):
 
         # Stacked Widget Part -----------------------------
         # Setting Stacked Widget(like a switching Tabs)
-        self.armyPeriod = QWidget()
         self.setSchedule = QWidget()
         self.lunaDate = QWidget()
 
         # Design And Setting Actions each Tab. if want to Append any action, plz input the action in here.
-        self.armyPeriodUI()
         self.setScheduleUI()
         self.lunaDateUI()
 
         # Appending tabs in Stack
         self.Stack = QStackedWidget()
-        self.Stack.addWidget(self.armyPeriod)
         self.Stack.addWidget(self.setSchedule)
         self.Stack.addWidget(self.lunaDate)
 
         # Switching Button layout Design And binding button with action.
         self.tabLayout = QHBoxLayout()
-        self.tabLayout.addWidget(Button("전역일 계산기", lambda: self.display(0)))
-        self.tabLayout.addWidget(Button("캘린더", lambda: self.display(1)))
-        self.tabLayout.addWidget(Button("음력", lambda: self.display(2)))
+        self.tabLayout.addWidget(Button("캘린더", lambda: self.display(0)))
+        self.tabLayout.addWidget(Button("음력", lambda: self.display(1)))
 
         for i in range(self.tabLayout.count()):
             self.tabLayout.itemAt(i).widget().setStyleSheet('font-size: 8pt')
@@ -172,7 +168,7 @@ class Calendar(QWidget):
 
         self.mainLayout.addLayout(self.leftLayout)
         self.mainLayout.addWidget(self.Stack)
-        self.Stack.setCurrentIndex(1)   # default Tab -> set calendar
+        self.Stack.setCurrentIndex(0)   # default Tab -> set calendar
         self.setLayout(self.mainLayout)
         self.setWindowTitle("Calendar")
 
@@ -309,11 +305,6 @@ class Calendar(QWidget):
     def closeEvent(self, event):
         with open(self.fileRoot, "wb") as file:
             pickle.dump(self.displayCalendar.schedule, file)
-
-    def armyPeriodUI(self):
-        layout = QVBoxLayout()
-        layout.addWidget(QLabel("Army Period"))
-        self.armyPeriod.setLayout(layout)
 
     def setScheduleUI(self):
         # Schedules layout ==================================
