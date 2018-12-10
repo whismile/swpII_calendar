@@ -63,18 +63,6 @@ class CalendarCalculator:
         self.lunarCalculator.setSolarDate(year, month, day)
         return self.lunarCalculator.LunarIsoFormat()
 
-    def parseDate(self, date: str) -> tuple:
-        day = date[len(date) - 2:]
-        month = date[len(date) - 4:len(date) - 2]
-        year = date[:len(date)-4]
-
-        if month[0] == '0':
-            month = month[1]
-
-        if day[0] == '0':
-            day = day[1]
-
-        return (int(year), int(month), int(day))
 
 if __name__ == "__main__":
     calendar = CalendarCalculator()
