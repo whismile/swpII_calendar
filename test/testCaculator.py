@@ -4,6 +4,7 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir))
 from calendarCalculator import CalendarCalculator
 
+
 class TestCalculator(unittest.TestCase):
     def setUp(self):
         self.calculator = CalendarCalculator()
@@ -27,19 +28,6 @@ class TestCalculator(unittest.TestCase):
         testDate = '2000-10-31'
         self.assertEqual(self.calculator.formatDate(testDate), (2000, 10, 31))
 
-    def testParseDate(self):
-        testDate = "20181231"
-        self.assertEqual(self.calculator.parseDate(testDate), (2018, 12, 31))
-
-        testDate = "2001231"
-        self.assertEqual(self.calculator.parseDate(testDate), (200, 12, 31))
-
-        testDate = "21231"
-        self.assertEqual(self.calculator.parseDate(testDate), (2, 12, 31))
-
-        testDate = "00081231"
-        self.assertEqual(self.calculator.parseDate(testDate), (8, 12, 31))
-
     def testToSolarDate(self):
         self.assertEqual(self.calculator.toSolarDate(2018, 12, 10), (2019, 1, 15))
         self.assertEqual(self.calculator.toSolarDate(2037, 11, 25), (2037, 12, 31))
@@ -55,6 +43,7 @@ class TestCalculator(unittest.TestCase):
         self.assertEqual(self.calculator.getSolarHoliday(2018, 8, 15, "추석"), (9, 24, "추석"))
         self.assertEqual(self.calculator.getSolarHoliday(2018, 1, 1, "설날"), (2, 16, "설날"))
         self.assertEqual(self.calculator.getSolarHoliday(2018, 4, 8, "부처님오신날"), (5, 22, "부처님오신날"))
+
 
 if __name__ == '__main__':
     unittest.main()
