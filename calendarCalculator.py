@@ -11,11 +11,13 @@ class CalendarCalculator:
         :param year: the year
         :return: boolean type data
         '''
-        if year % 4 == 0 and year % 100 != 0:
+        if year % 4 == 0 and year % 100 != 0 or year % 400 == 0:
             return True
 
-        elif year % 400 == 0:
-            return True
+        #if ((i % 4 == 0 & & i % 100 != 0) | | i % 400 == 0)
+
+        #elif year % 400 == 0:
+            #return True
 
         else:
             return False
@@ -61,7 +63,7 @@ class CalendarCalculator:
         self.lunarCalculator.setSolarDate(year, month, day)
         return self.lunarCalculator.LunarIsoFormat()
 
-    def parseDate(self, date):
+    def parseDate(self, date: str) -> tuple:
         day = date[len(date) - 2:]
         month = date[len(date) - 4:len(date) - 2]
         year = date[:len(date)-4]
@@ -78,3 +80,4 @@ if __name__ == "__main__":
     calendar = CalendarCalculator()
     print(calendar.getSolarHoliday(2018, 4, 8, "부처님오신날"))
     print(calendar.toLunarDate(2018, 12, 31))
+    print(calendar.isLunarMonth(2018))
