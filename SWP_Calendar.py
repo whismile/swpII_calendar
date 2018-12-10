@@ -28,6 +28,7 @@ class Button(QToolButton):
         size.setWidth(max(size.width(), size.height()))
         return size
 
+
 class Calendar(QWidget):
 
     def __init__(self, parent=None, year=int(time.strftime('%Y', time.localtime(time.time()))),
@@ -351,12 +352,26 @@ class Calendar(QWidget):
         self.setSchedule.setLayout(self.scheduleLayout)
 
     def lunaDateUI(self):
+        month_31 = [1, 3, 5, 7, 8, 10, 12]
+
         layout = QVBoxLayout()
         #layout.addWidget(QLabel("Luna Date"))
         topLayout = QHBoxLayout()
-        self.yearLine = QLineEdit()
-        modeComboBox = QComboBox()
-        modeComboBox.addItems(["양력 -> 음력", "음력 -> 양력"])
+        self.yearSpinner = QSpinBox(); self.yearSpinner.setRange(1980, 2040)
+        self.monthSpinner = QSpinBox(); self.monthSpinner.setRange(1, 12)
+        self.daySpinner = QSpinBox()
+
+        self.yearSpinner.setValue(self.today.tm_year)
+        self.monthSpinner.setValue(self.today.tm_mon)
+        self.daySpinner.setValue(self.today.tm_mday)
+
+        self.monthSpinner.valueChanged.connect(
+            lambda: self.daySpinner.setRange(1, self.displayCalendar.getMaxday(self.yearSpinner.value(), self.monthSpinner.value())
+                                        )
+        )
+
+        self.modeComboBox = QComboBox()
+        self.modeComboBox.addItems(["양력 -> 음력", "음력 -> 양력"])
         convertBtn = Button("convert", self.lunarBtnEvent)
         resetBtn = Button("reset", self.lunarBtnEvent)
 
@@ -369,7 +384,7 @@ class Calendar(QWidget):
         solarLabel = QLabel("양력날짜")
         solarLabel.setStyleSheet('color: gray;')
         todaySolarDay = "%04d-%02d-%02d" % (self.today.tm_year, self.today.tm_mon, self.today.tm_mday)
-        solarDateLabel = QLabel(todaySolarDay)
+        self.solarDateLabel = QLabel(todaySolarDay)
         lunarLabel = QLabel("음력날짜")
         lunarLabel.setStyleSheet('color: gray;')
         self.lunarDateLabel = QLabel(self.displayCalendar.calculator.getToLunarDate(
@@ -378,20 +393,22 @@ class Calendar(QWidget):
 
         titleBox.addWidget(self.todayLabel)
         solarBox.addWidget(solarLabel)
-        solarBox.addWidget(solarDateLabel)
+        solarBox.addWidget(self.solarDateLabel)
         lunarBox.addWidget(lunarLabel)
         lunarBox.addWidget(self.lunarDateLabel)
         bottomLayout.addLayout(titleBox)
         bottomLayout.addLayout(solarBox)
         bottomLayout.addLayout(lunarBox)
 
-        topLayout.addWidget(self.yearLine)
-        topLayout.addWidget(modeComboBox)
+        topLayout.addWidget(self.yearSpinner); topLayout.addWidget(self.monthSpinner); topLayout.addWidget(self.daySpinner)
+        topLayout.addWidget(self.modeComboBox)
         topLayout.addWidget(convertBtn)
         topLayout.addWidget(resetBtn)
 
-        layout.addLayout(topLayout)
+        layout.addStretch()
         layout.addLayout(bottomLayout)
+        layout.addLayout(topLayout)
+        layout.addStretch()
         self.lunaDate.setLayout(layout)
 
     def display(self, i):
@@ -413,23 +430,40 @@ class Calendar(QWidget):
             elif item.layout() is not None:
                 self.showingWidget(layout.itemAt(i).layout())
 
-
     def lunarBtnEvent(self):
         btn = self.sender()
         key = btn.text()
 
         if key == 'reset':
-            self.yearLine.setText('')
             self.todayLabel.setText('오늘의 날짜정보')
             self.todayLabel.setStyleSheet('color: red; font-size: 18px;')
 
         elif key == 'convert':
-            text = self.yearLine.text()
-            self.todayLabel.setText("양력 {}년 {}월 {}일".format(int(text[:4]), text[4:6], text[6:]))
-            self.todayLabel.setStyleSheet('font-weight: bold; color: black; font-size: 12px;')
-            date = self.displayCalendar.calculator.parseDate(text)
-            lunarDate = self.displayCalendar.calculator.getToLunarDate(*date)
-            self.lunarDateLabel.setText(lunarDate)
+            if self.modeComboBox.currentIndex() is 0:
+                self.todayLabel.setText("양력 {}년 {}월 {}일".format(
+                    self.yearSpinner.value(), self.monthSpinner.value(), self.daySpinner.value()))
+                self.todayLabel.setStyleSheet('font-weight: bold; color: black; font-size: 12px;')
+                lunarDate = self.displayCalendar.calculator.getToLunarDate(
+                    self.yearSpinner.value(), self.monthSpinner.value(), self.daySpinner.value()
+                )
+                self.solarDateLabel.setText(
+                    str(self.yearSpinner.value()) + "-" +
+                    str(self.monthSpinner.value()) + "-" +
+                    str(self.daySpinner.value()))
+                self.lunarDateLabel.setText(lunarDate)
+            else:
+                self.todayLabel.setText("음력 {}년 {}월 {}일".format(
+                    self.yearSpinner.value(), self.monthSpinner.value(), self.daySpinner.value()))
+                self.todayLabel.setStyleSheet('font-weight: bold; color: black; font-size: 12px;')
+                solarDate = self.displayCalendar.calculator.toSolarDate(
+                    self.yearSpinner.value(), self.monthSpinner.value(), self.daySpinner.value()
+                )
+                self.solarDateLabel.setText(str(solarDate[0]) + "-" + str(solarDate[1]) + "-" + str(solarDate[2]))
+                self.lunarDateLabel.setText(
+                    str(self.yearSpinner.value()) + "-" +
+                    str(self.monthSpinner.value()) + "-" +
+                    str(self.daySpinner.value()))
+
 
 if __name__ == '__main__':
     import sys
