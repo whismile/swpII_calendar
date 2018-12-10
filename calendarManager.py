@@ -16,6 +16,9 @@ class MyCalendar:
     def getCalander(self):
         return self.calendar
 
+    def getMaxday(self, year, month):
+        return calendar.monthrange(year, month)[1]
+
     def setYear(self, year):
         self._year = year
 
@@ -23,7 +26,6 @@ class MyCalendar:
         self._month = month
 
     def setCalander(self, year, month):
-        print("call makeCalendar")
         self.calendar = self.makeCalendar(year, month)
 
         # Append before month days first line
