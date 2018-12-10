@@ -70,12 +70,13 @@ class Calendar(QWidget):
             self.fileRoot = ".\schedules.txt"
 
         else:
-            self.fileRoot = "./schedules.txt"
+            self.fileRoot = "./schedules/schedules.txt"
 
         try:
             scheduleFile = open(self.fileRoot, "rb")
             self.displayCalendar.schedule = pickle.load(scheduleFile)
             print(self.displayCalendar.schedule)
+
         except EOFError:
             pass
 
@@ -211,9 +212,14 @@ class Calendar(QWidget):
 
                 for restMonth, restDay, title in self.displayCalendar.holidays:
                     if restMonth == self.currentMonth and restDay == day and btn.isEnabled():
-                        btn.setStyleSheet('color: red;')
-                        btn.setToolTip(title)
-                        break
+                        if key in self.displayCalendar.schedule.keys() and btn.isEnabled():
+                            btn.setStyleSheet('background-color: skyblue; color: red;')
+                            btn.setToolTip(title)
+
+                        else:
+                            btn.setStyleSheet('color: red;')
+                            btn.setToolTip(title)
+                            break
 
                 # 공휴일은 빨간색으로 설정해준다.
                 if col == 0 and btn.isEnabled():
@@ -311,6 +317,20 @@ class Calendar(QWidget):
                 child.widget().deleteLater()
 
     def closeEvent(self, event):
+        keys = []
+        myEvent = self.displayCalendar.schedule
+
+        for target in myEvent.keys():
+            title = myEvent[target].title
+            place = myEvent[target].place
+            discription = myEvent[target].discription
+
+            if (title, place, discription) == ('', '', ''):
+                keys.append(target)
+
+        for target in keys:
+            del self.displayCalendar.schedule[target]
+
         with open(self.fileRoot, "wb") as file:
             pickle.dump(self.displayCalendar.schedule, file)
 
