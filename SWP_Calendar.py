@@ -67,7 +67,7 @@ class Calendar(QWidget):
         self.today = time.localtime()
 
         if os.name == 'nt':
-            self.fileRoot = ".\schedules.txt"
+            self.fileRoot = ".\schedules\schedules.txt"
 
         else:
             self.fileRoot = "./schedules/schedules.txt"
@@ -181,6 +181,9 @@ class Calendar(QWidget):
         todayMonth = self.today.tm_mon
         todayDay = self.today.tm_mday
         toggle = True
+
+        for i in newCalendar:
+            print(i)
 
         # Enroll button
         for row, column in enumerate(newCalendar):
@@ -323,9 +326,10 @@ class Calendar(QWidget):
         for target in myEvent.keys():
             title = myEvent[target].title
             place = myEvent[target].place
-            discription = myEvent[target].getDescription()
 
-            if (title, place, discription) == ('', '', ''):
+            description = myEvent[target].description
+
+            if (title, place, description) == ('', '', ''):
                 keys.append(target)
 
         for target in keys:
@@ -484,6 +488,7 @@ class Calendar(QWidget):
                     str(self.yearSpinner.value()) + "-" +
                     str(self.monthSpinner.value()) + "-" +
                     str(self.daySpinner.value()))
+
 
 if __name__ == '__main__':
     import sys
