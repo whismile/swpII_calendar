@@ -5,7 +5,8 @@ from PyQt5.QtWidgets import (QApplication, QWidget,
                              QGridLayout, QLabel,
                              QVBoxLayout, QHBoxLayout,
                              QTextEdit, QComboBox,
-                             QSpinBox, QStackedWidget)
+                             QSpinBox, QStackedWidget,
+                             QMessageBox)
 
 import pickle
 from calendarManager import MyCalendar, MyEvent
@@ -424,6 +425,11 @@ class Calendar(QWidget):
             self.todayLabel.setStyleSheet('color: red; font-size: 18px;')
 
         elif key == 'convert':
+            if self.yearLine.text() == '':
+                msg = QMessageBox()
+                msg.about(self, "실패", "날짜를 입력해주세요!")
+                return
+
             text = self.yearLine.text()
             self.todayLabel.setText("양력 {}년 {}월 {}일".format(int(text[:4]), text[4:6], text[6:]))
             self.todayLabel.setStyleSheet('font-weight: bold; color: black; font-size: 12px;')
