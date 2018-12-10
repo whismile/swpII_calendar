@@ -2,6 +2,7 @@ import calendar
 from calendarCalculator import CalendarCalculator
 import pickle
 
+
 class MyCalendar:
     def __init__(self):
         self.calculator = CalendarCalculator()
@@ -106,12 +107,13 @@ class MyCalendar:
         except:
             return False
 
+
 class MyEvent:
     def __init__(self):
         self.title = ''
         self.place = ''
         self.date = ''
-        self.discription = ''
+        self.description = ''
 
     def setTitle(self, title):
         self.title = title
@@ -122,8 +124,8 @@ class MyEvent:
     def setDate(self, date):
         self.date = date[:]
 
-    def setDiscription(self, text):
-        self.discription = text
+    def setDescription(self, text):
+        self.description = text
 
     def getTitle(self):
         return self.title
@@ -134,14 +136,15 @@ class MyEvent:
     def getDate(self):
         return self.date
 
-    def getDiscription(self):
-        return self.discription
+    def getDescription(self):
+        return self.description
 
-    def setEvent(self, title, place, date, discription):
+    def setEvent(self, title, place, date, description):
         self.setTitle(title)
         self.setPlace(place)
         self.setDate(date)
-        self.setDiscription(discription)
+        self.setDescription(description)
+
 
 if __name__ == '__main__':
     cal = MyCalendar()
